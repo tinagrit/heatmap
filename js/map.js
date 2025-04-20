@@ -110,6 +110,17 @@ L.Util.ajax("./geojson/trainPoints.geojson").then((data)=> {
     }).addTo(map);
 });
 
+L.Util.ajax("./geojson/majorBusPoints.geojson").then((data)=> {
+    L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) {
+            return L.layerGroup([
+                L.circleMarker(latlng,MARKERS_PROPS),
+                L.circle(latlng,ZOOMED_IN_SIGNIF_PROPS),
+            ]); 
+        }
+    }).addTo(map);
+});
+
 L.Util.ajax("./geojson/busPoints.geojson").then((data)=> {
     L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
