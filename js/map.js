@@ -22,41 +22,57 @@ const LINE_COLORS = {
 const LABELS_ORDER = 5;
 
 const MARKERS_ORDER = 4;
-const MARKERS_PROPS = {
+let MARKERS_PROPS = {
     radius: 4,
     fillColor: "#FFFFFF",
     color: "#00355F",
     weight: 2,
     opacity: 1,
-    fillOpacity: 1,
-    pane: 'markers'
+    fillOpacity: 1
 };
 
 const ZOOM_THRESHOLD = 13;
 
 const ZOOMED_IN_MARKERS_ORDER = 3;
-const ZOOMED_IN_SIGNIF_PROPS = {
+let ZOOMED_IN_MAJOR_PROPS = {
     radius: 30,
     fillColor: "#FFFFFF",
     color: "#00355F",
     weight: 3,
     opacity: 1,
-    fillOpacity: 1,
-    pane: 'bgMarkers'
+    fillOpacity: 1
 };
-const ZOOMED_IN_INSIGNIF_PROPS = {
+let ZOOMED_IN_SIGNIF_PROPS = {
+    radius: 15,
+    fillColor: "#FFFFFF",
+    color: "#009F49",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 0.5
+};
+let ZOOMED_IN_INSIGNIF_PROPS = {
     radius: 10,
     fillColor: "#0081C6",
     color: "#3F3F3F",
     weight: 0.5,
     opacity: 0.5,
-    fillOpacity: 0.5,
-    pane: 'bgMarkers'
+    fillOpacity: 0.5
 };
 
 
 
 
+
+const showNamePopup = (feature, layer) => {
+    if (feature.properties && feature.properties.name) {
+        layer.bindPopup(feature.properties.name);
+    }
+}
+
+MARKERS_PROPS.pane = "markers";
+ZOOMED_IN_MAJOR_PROPS.pane = "bgMarkers";
+ZOOMED_IN_SIGNIF_PROPS.pane = "bgMarkers";
+ZOOMED_IN_INSIGNIF_PROPS.pane = "bgMarkers";
 
 let map = L.map('map', {
     center: MAP_CENTER,
@@ -67,7 +83,7 @@ let map = L.map('map', {
 
 map.createPane('labels');
 map.getPane('labels').style.zIndex = 650 + LABELS_ORDER;
-map.getPane('labels').style.pointerEvents = 'none';
+// map.getPane('labels').style.pointerEvents = 'none';
 
 map.createPane('markers');
 map.getPane('markers').style.zIndex = 650 + MARKERS_ORDER;
@@ -102,20 +118,20 @@ linesGeoJSON.addTo(map);
 L.Util.ajax("./geojson/trainPoints.geojson").then((data)=> {
     L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
-            return L.layerGroup([
-                L.circleMarker(latlng,MARKERS_PROPS),
-                L.circle(latlng,ZOOMED_IN_SIGNIF_PROPS),
+            return L.featureGroup([
+                L.circleMarker(latlng,MARKERS_PROPS).bindPopup(feature.properties.name),
+                L.circle(latlng,ZOOMED_IN_MAJOR_PROPS).bindPopup(feature.properties.name),
             ]); 
-        }
+        },
+        onEachFeature: showNamePopup
     }).addTo(map);
 });
 
 L.Util.ajax("./geojson/majorBusPoints.geojson").then((data)=> {
     L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
-            return L.layerGroup([
-                L.circleMarker(latlng,MARKERS_PROPS),
-                L.circle(latlng,ZOOMED_IN_SIGNIF_PROPS),
+            return L.featureGroup([
+                L.circleMarker(latlng,MARKERS_PROPS).bindPopup(feature.properties.name)
             ]); 
         }
     }).addTo(map);
@@ -124,7 +140,16 @@ L.Util.ajax("./geojson/majorBusPoints.geojson").then((data)=> {
 L.Util.ajax("./geojson/busPoints.geojson").then((data)=> {
     L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
-            return L.circle(latlng,ZOOMED_IN_INSIGNIF_PROPS);
+            if (feature.properties.rapid == "") {
+                return L.circle(latlng,ZOOMED_IN_INSIGNIF_PROPS).bindPopup(feature.properties.name);
+            } else {
+                if (feature.properties.rapid[0] == "R") {
+                    ZOOMED_IN_SIGNIF_PROPS.color = LINE_COLORS["RapidBus"];
+                } else if (feature.properties.rapid == "099") {
+                    ZOOMED_IN_SIGNIF_PROPS.color = LINE_COLORS["B-Line"];
+                }
+                return L.circle(latlng,ZOOMED_IN_SIGNIF_PROPS).bindPopup(feature.properties.name);
+            }
         }
     }).addTo(map);
 });

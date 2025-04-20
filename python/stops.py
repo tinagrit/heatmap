@@ -19,7 +19,8 @@ class Properties(Enum):
     ZONE = 10
 
 filenames = {
-    "input filename": "./geojson/stops.csv",
+    "input (all stops) filename": "./geojson/stops.csv",
+    "input (rapid stops) filename": "./geojson/rapidstops.csv",
     "output 1 filename": "./geojson/trainPoints.geojson",
     "output 2 filename": "./geojson/busPoints.geojson"
 }
@@ -30,10 +31,16 @@ for name, path in filenames.items():
         path = ask
 
 tl = []
-with open(filenames["input filename"],"r") as f:
+rs = []
+
+with open(filenames["input (all stops) filename"],"r") as f:
     tl = f.readlines()
 
+with open(filenames["input (rapid stops) filename"], "r") as f:
+    rs = f.readlines()
+
 tl = tl[1:]
+rs = rs[1:]
 
 trainStations = []
 busStops = []
@@ -45,6 +52,17 @@ for line in tl:
     if hasParent:
         continue
 
+    isTrainStation = bool(stop[Properties.TYPE.value] == "1")
+    rapidBusStop = ""
+
+    if not isTrainStation:
+        code = stop[Properties.CODE.value]
+        for check in rs:
+            checkobj = check.strip().split(",")
+            if checkobj[1] == code:
+                rapidBusStop = checkobj[5]
+                break
+
     lat = stop[Properties.LAT.value]
     lon = stop[Properties.LON.value]
     coord = (float(lon), float(lat))
@@ -55,10 +73,11 @@ for line in tl:
 
     feature = geojson.Feature(geometry=point, properties={
         "name": name,
-        "wheelchair": isWheelchairAccessible
+        "wheelchair": isWheelchairAccessible,
+        "rapid": rapidBusStop
     })
 
-    isTrainStation = bool(stop[Properties.TYPE.value] == "1")
+    
     if isTrainStation:
         trainStations.append(feature)
     else:
