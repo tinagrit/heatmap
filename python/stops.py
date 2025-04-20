@@ -20,8 +20,8 @@ class Properties(Enum):
 
 filenames = {
     "input filename": "./geojson/stops.csv",
-    "output 1 filename": "./geojson/trainPoints.csv",
-    "output 2 filename": "./geojson/busPoints.csv"
+    "output 1 filename": "./geojson/trainPoints.geojson",
+    "output 2 filename": "./geojson/busPoints.geojson"
 }
 
 for name, path in filenames.items():
@@ -47,7 +47,7 @@ for line in tl:
 
     lat = stop[Properties.LAT.value]
     lon = stop[Properties.LON.value]
-    coord = (float(lat), float(lon))
+    coord = (float(lon), float(lat))
     point = geojson.Point(coord)
 
     name = stop[Properties.NAME.value]
