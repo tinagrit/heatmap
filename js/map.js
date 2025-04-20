@@ -9,6 +9,53 @@ const INITIAL_ZOOM = 12;
 const MIN_ZOOM = 11;
 const MAX_ZOOM = 17;
 
+const LINE_COLORS = {
+    "RapidBus": "#009F49",
+    "B-Line": "#F47920",
+    "SeaBus": "#87746A",
+    "Commuter": "#77278B",
+    "Expo Line": "#005DAA",
+    "Millenium Line": "#FFD200",
+    "Canada Line": "#009AC8"
+}
+
+const LABELS_ORDER = 5;
+
+const MARKERS_ORDER = 4;
+const MARKERS_PROPS = {
+    radius: 4,
+    fillColor: "#FFFFFF",
+    color: "#00355F",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 1,
+    pane: 'markers'
+};
+
+const ZOOM_THRESHOLD = 13;
+
+const ZOOMED_IN_MARKERS_ORDER = 3;
+const ZOOMED_IN_SIGNIF_PROPS = {
+    radius: 30,
+    fillColor: "#FFFFFF",
+    color: "#00355F",
+    weight: 3,
+    opacity: 1,
+    fillOpacity: 1,
+    pane: 'bgMarkers'
+};
+const ZOOMED_IN_INSIGNIF_PROPS = {
+    radius: 10,
+    fillColor: "#0081C6",
+    color: "#3F3F3F",
+    weight: 0.5,
+    opacity: 0.5,
+    fillOpacity: 0.5,
+    pane: 'bgMarkers'
+};
+
+
+
 
 
 let map = L.map('map', {
@@ -19,8 +66,14 @@ let map = L.map('map', {
 });
 
 map.createPane('labels');
-map.getPane('labels').style.zIndex = 650;
+map.getPane('labels').style.zIndex = 650 + LABELS_ORDER;
 map.getPane('labels').style.pointerEvents = 'none';
+
+map.createPane('markers');
+map.getPane('markers').style.zIndex = 650 + MARKERS_ORDER;
+
+map.createPane('bgMarkers');
+map.getPane('bgMarkers').style.zIndex = 650 + ZOOMED_IN_MARKERS_ORDER;
 
 map.setMaxBounds(ALLOWED_BOUNDS);
 
@@ -37,19 +90,42 @@ if (TILEMAP_LABEL_API != "") {
 
 let linesGeoJSON = new L.GeoJSON.AJAX("./geojson/lines.geojson",{
     style: function(feature) {
-        switch(feature.properties.Type) {
-            case 'RapidBus': return {color: "#009F49"};
-            case 'B-Line': return {color: "#F47920"};
-            case 'SeaBus': return {color: "#87746A"};
-            case 'Commuter': return {color: "#77278B"};
-            case 'SkyTrain': {
-                switch(feature.properties.Line) {
-                    case 'Expo Line': return {color: "#005DAA"};
-                    case 'Millenium Line': return {color: "#FFD200"};
-                    case 'Canada Line': return {color: "#009AC8"};
-                }
-            }
+        if (feature.properties.Type == "SkyTrain") {
+            return {color: LINE_COLORS[feature.properties.Line]}
+        } else {
+            return {color: LINE_COLORS[feature.properties.Type]}
         }
     }
 });
 linesGeoJSON.addTo(map);
+
+L.Util.ajax("./geojson/trainPoints.geojson").then((data)=> {
+    L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) {
+            return L.layerGroup([
+                L.circleMarker(latlng,MARKERS_PROPS),
+                L.circle(latlng,ZOOMED_IN_SIGNIF_PROPS),
+            ]); 
+        }
+    }).addTo(map);
+});
+
+L.Util.ajax("./geojson/busPoints.geojson").then((data)=> {
+    L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) {
+            return L.circle(latlng,ZOOMED_IN_INSIGNIF_PROPS);
+        }
+    }).addTo(map);
+});
+
+const togglePane = () => {
+    if (map.getZoom() > ZOOM_THRESHOLD) {
+        map.getPane('markers').style.display = 'none';
+        map.getPane('bgMarkers').style.display = '';
+    } else {
+        map.getPane('markers').style.display = '';
+        map.getPane('bgMarkers').style.display = 'none';
+    }
+}
+togglePane();
+map.on('zoomend', togglePane);
