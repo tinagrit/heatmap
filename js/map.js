@@ -94,12 +94,14 @@ map.getPane('bgMarkers').style.zIndex = 650 + ZOOMED_IN_MARKERS_ORDER;
 map.setMaxBounds(ALLOWED_BOUNDS);
 
 L.tileLayer(TILEMAP_API, {
-    attribution: TILEMAP_API_ATTRIB
+    attribution: TILEMAP_API_ATTRIB,
+    bounds: ALLOWED_BOUNDS
 }).addTo(map);
 
 if (TILEMAP_LABEL_API != "") {
     L.tileLayer(TILEMAP_LABEL_API, {
         attribution: TILEMAP_API_ATTRIB,
+        bounds: ALLOWED_BOUNDS,
         pane: 'labels'
     }).addTo(map);
 }
