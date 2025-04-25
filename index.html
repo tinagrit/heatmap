@@ -15,23 +15,25 @@
     <script src="./js/leaflet.ajax.js"></script>
 </head>
 <body>
-    <header>
-        <span id="brand">Heatmap</span>
-        <span id="subbrand">of Metro Vancouver</span>
-    </header>
-    <div id="it" class="fullscreen initial">
-        <section class="it_welcome new">
-            <h1 class="it_title">Find out the best place to live</h1>
-            <p class="it_sub">Please answer a couple of questions</p>
-            <div class="it_button fill">Next</div>
-        </section>
-        <section class="it_welcome returning">
-            <h1 class="it_title">Welcome back</h1>
-            <div class="it_button fill">Your heatmap</div>
-            <div class="it_button">Start over</div>
-        </section>
+    <div id="overlay">
+        <div id="textbox">
+            <section id="initialWelcome" class="start active">
+                <p class="small">Welcome to</p>
+                <h2 class="brand">HEATMAP</h2>
+                <p class="subbrand">of Metro Vancouver</p>
+                <button class="dominant" id="startButton">Start</button>
+                <button class="sub">Return</button>
+            </section>
+            <section id="generationLoader">
+                <div class="small">Generating...</div>
+            </section>
+        </div>
     </div>
     <div id="bg">
+        <div class="brandGroup" id="watermark">
+            <h2 class="brand">HEATMAP</h2>
+            <p class="subbrand">of Metro Vancouver</p>
+        </div>
         <div id="map"></div>
     </div>
 
