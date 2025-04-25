@@ -95,7 +95,8 @@ map.setMaxBounds(ALLOWED_BOUNDS);
 
 L.tileLayer(TILEMAP_API, {
     attribution: TILEMAP_API_ATTRIB,
-    bounds: ALLOWED_BOUNDS
+    bounds: ALLOWED_BOUNDS,
+    errorTileUrl: './styles/errtile.png'
 }).addTo(map);
 
 if (TILEMAP_LABEL_API != "") {
