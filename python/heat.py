@@ -3,6 +3,7 @@
 
 import geojson
 import math
+import cellinfo
 
 CELL_SIZE_METRES = 250
 TOP_LEFT_BOUNDS = (-123.5200, 49.4500)
