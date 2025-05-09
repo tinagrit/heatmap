@@ -17,6 +17,8 @@ cellcount = 0
 
 current = [TOP_LEFT_BOUNDS[0], TOP_LEFT_BOUNDS[1]]
 
+print("Iterating through each cell...   ",end="",flush=True)
+
 # Iterate through all cells within the bounds
 while (current[1] >= BOTTOM_RIGHT_BOUNDS[1]):
     changeVertical = CELL_SIZE_METRES * LATITUDE_PER_METRE * (1/math.cos(abs(current[1] * RADIAN_PER_DEGREE)))
@@ -47,7 +49,9 @@ while (current[1] >= BOTTOM_RIGHT_BOUNDS[1]):
     
 collectionCells = geojson.FeatureCollection(cells)
 
+print("[✓]\nDumping GeoJSON...   ",end="",flush=True)
+
 with open("./geojson/heatraw.geojson", "w") as f:
     geojson.dump(collectionCells, f)
 
-print(f"Dumped GeoJSON successfully with {cellcount} processed cells.")
+print(f"[✓]\nOperation successful with {cellcount} processed cells.")

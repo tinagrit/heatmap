@@ -21,17 +21,19 @@ class Polygon(osmium.SimpleHandler):
                 wkb = WKBfactory.create_multipolygon(a)
             except RuntimeError as e:
                 return
-            
+
             shape = shapely.wkb.loads(wkb, hex=True)
             self.waters.append(shape)
 
-print("Working on it...")
+print("Parsing OpenStreetMap data...   ",end="",flush=True)
 
 polygons = Polygon()
 polygons.apply_file(PBF_PATH,locations=True)
 
 if polygons.waters:
     waterUnion = shapely.ops.unary_union(polygons.waters)
+
+print("[✓]")
 
 def waterRatio(cell):
     if not waterUnion:
