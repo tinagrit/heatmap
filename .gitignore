@@ -3,3 +3,4 @@ geojson/
 leaflet/
 __pycache__/
 .vscode/
+js/leaflet.ajax.js
