@@ -3,6 +3,7 @@
 
 import geojson
 import math
+import shapely
 import cellinfo
 
 CELL_SIZE_METRES = 250
@@ -14,6 +15,7 @@ RADIAN_PER_DEGREE = math.pi/180
 
 cells = []
 cellcount = 0
+ignored = 0
 
 current = [TOP_LEFT_BOUNDS[0], TOP_LEFT_BOUNDS[1]]
 
@@ -30,28 +32,35 @@ while (current[1] >= BOTTOM_RIGHT_BOUNDS[1]):
         BOTTOM_LEFT = (current[0],current[1]+changeVertical)
         BOTTOM_RIGHT = (current[0]+changeHorizontal,current[1]+changeVertical)
 
-        polygon = geojson.Polygon([
+        polygon = shapely.geometry.Polygon([
             TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, TOP_LEFT
         ])
 
+        print(f"\rIterating through each cell [{int((cellcount/75482)*100)}%]",end="",flush=True)
+        cellcount += 1
+        current[0] += changeHorizontal
+
+        if cellinfo.waterRatio(polygon) > 0.5:
+            ignored += 1
+            continue
+
         score = 1
         
-        feature = geojson.Feature(geometry=polygon,properties={
+        feature = geojson.Feature(geometry=shapely.geometry.mapping(polygon),properties={
             "static": score
         })
 
         cells.append(feature)
 
-        cellcount += 1
-        current[0] += changeHorizontal
     current[1] -= changeVertical
     current[0] = TOP_LEFT_BOUNDS[0]
     
 collectionCells = geojson.FeatureCollection(cells)
 
-print("[✓]\nDumping GeoJSON...   ",end="",flush=True)
+print("\rIterating through each cell...   [✓]")
+print("Dumping GeoJSON...   ",end="",flush=True)
 
 with open("./geojson/heatraw.geojson", "w") as f:
     geojson.dump(collectionCells, f)
 
-print(f"[✓]\nOperation successful with {cellcount} processed cells.")
+print(f"[✓]\nOperation successful with {cellcount - ignored} processed cells ({ignored} ignored)")
